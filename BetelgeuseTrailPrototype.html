@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      canvas {
+        border: 1px solid #d3d3d3;
+        background-color: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body onload="startGame()">
+    <script>
+      function startGame() {
+        myGameArea.start();
+      }
+
+      var myGameArea = {
+        canvas: document.createElement("canvas"),
+        start: function () {
+          this.canvas.width = 960;
+          this.canvas.height = 540;
+          this.context = this.canvas.getContext("2d");
+          document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        },
+        stop: function () {
+          console.log("myGameArea stop running");
+          ctx = myGameArea.context;
+          ctx.fillStyle = "white";
+          ctx.fillRect(
+            ctx.canvas.width / 3 / 2,
+            ctx.canvas.height / 3 / 2,
+            (ctx.canvas.width / 3) * 2,
+            (ctx.canvas.height / 3) * 2
+          );
+          ctx.fillStyle = "black";
+          ctx.font = "20px Arial";
+          maxWidth = 620;
+          lineHeight = 30;
+          totalWounds = 0;
+          nearStarvation = 0;
+          for (i = 0; i < members.length; i++) {
+            if (members[i].wound > 0) {
+              console.log("adding to total wounds");
+              totalWounds--;
+            }
+            if (members[i].hunger > 1) {
+              console.log("adding to near starvation");
+              nearStarvation--;
+            }
+          }
+          score =
+            members.length * 500 +
+            myCaravan.food * 10 +
+            myCaravan.medicine * 50 +
+            myCaravan.guns * 100 +
+            myCaravan.ammo * 2 +
+            totalWounds * 200 +
+            nearStarvation * 100;
+          wrapText(
+            ctx,
+            "Game Over!",
+            "You've achieved a score of " + score + "!",
+            "I hope you've enjoyed my game! Press space to restart.",
+            ctx.canvas.width / 3 / 2 + 10,
+            ctx.canvas.height / 3 / 2 + 30,
+            maxWidth,
+            lineHeight
+          );
+          console.log("daysLeft - should be 0: " + daysLeft);
+          daysLeft = 10;
+          console.log("members.length: " + members.length);
+          members.splice(0, members.length);
+          console.log("members.length after purge: " + members.length);
+          console.log("wew lad, added the reStart listener!");
+          window.addEventListener("keydown", function reStart(e) {
+            if (e.keyCode === 32) {
+              startGame();
+              console.log("wew lad, just ran startGame!");
+              window.removeEventListener("keydown", reStart);
+              console.log("wew lad, removed the reStart listener!");
+            }
+          });
+        },
+      };
+
+      function startGame() {
+        console.log("gamestart");
+        myGameArea.start();
+        ctx = myGameArea.context;
+        backgroundTerrain();
+        myCaravan = new Caravan(
+          myGameArea.canvas.width / 2,
+          myGameArea.canvas.height / 2 + myGameArea.canvas.height / 8,
+          8,
+          20,
+          1,
+          2,
+          100
+        );
+        drawSupplies();
+        ctx.fillStyle = "white";
+        ctx.fillRect(
+          ctx.canvas.width / 3 / 2,
+          ctx.canvas.height / 3 / 2,
+          (ctx.canvas.width / 3) * 2,
+          (ctx.canvas.height / 3) * 2
+        );
+        ctx.fillStyle = "black";
+        ctx.font = "20px Arial";
+        maxWidth = 620;
+        lineHeight = 30;
+        console.log("Title card");
+        wrapText(
+          ctx,
+          "Like many others, you have chosen to set off and colonize brave new worlds. One small catch; your dropship broke apart on entering the atmosphere. A handful of other colonists survived the crash with you, and after scrounging what meager supplies you can find, a plan is settled upon: your only hope is to reach the supply beacon and call down the bulk of your supplies, still in orbit. With no time to waste, you begin your trek across a wild, new world.",
+          "",
+          "Welcome to Betelgeuse Trail! Press space to start.",
+          ctx.canvas.width / 3 / 2 + 10,
+          ctx.canvas.height / 3 / 2 + 30,
+          maxWidth,
+          lineHeight
+        );
+        checkMe = window.addEventListener("keydown", function setOff(e) {
+          if (e.keyCode === 32) {
+            window.removeEventListener("keydown", setOff);
+            console.log("setting new interval, game start");
+            this.interval = setInterval(updateGame, 5000);
+            backgroundTerrain();
+            myCaravan.drawIt();
+            for (i = 0; i < members.length; i++) {
+              members[i].drawMe();
+            }
+            drawSupplies();
+          }
+        });
+      }
+
+      // Function to display supplies and remaining days.
+
+      function drawSupplies() {
+        ctx = myGameArea.context;
+        x = 0;
+        y = myGameArea.canvas.height - myGameArea.canvas.height / 4 / 2;
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("Food = " + myCaravan.food, x + 20, y);
+        ctx.fillText("Medicine = " + myCaravan.medicine, x + 180, y);
+        ctx.fillText("Guns = " + myCaravan.guns, x + 360, y);
+        ctx.fillText("Ammo = " + myCaravan.ammo, x + 540, y);
+        ctx.fillStyle = "black";
+        y = 30;
+        ctx.fillText("Days from destination: " + daysLeft, x + 20, y);
+      }
+
+      // Function for wrapping text.
+
+      function wrapText(
+        context,
+        text1,
+        text2,
+        text3,
+        x,
+        y,
+        maxWidth,
+        lineHeight
+      ) {
+        var words = text1.split(" ");
+        var line = "";
+        for (var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + " ";
+          var metrics = context.measureText(testLine);
+          var testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            context.fillText(line, x, y);
+            line = words[n] + " ";
+            y += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        context.fillText(line, x, y);
+        context.fillText(text2, x, y + lineHeight * 2);
+        context.fillText(text3, x, y + lineHeight * 4);
+      }
+
+      // Prompt displayed when user has insufficient supplies to even attempt an action.
+
+      function failedCheck() {
+        console.log("failcheck printing");
+        wrapText(
+          ctx,
+          failure,
+          "",
+          "Press space to continue",
+          ctx.canvas.width / 3 / 2 + 10,
+          ctx.canvas.height / 3 / 2 + 30,
+          maxWidth,
+          lineHeight
+        );
+      }
+
+      function typeCheck(type, amt) {
+        switch (type) {
+          case "food":
+            if (myCaravan.food < amt) {
+              console.log("failed food check");
+              failedCheck();
+              return true;
+            } else {
+              console.log("passed food check");
+              return false;
+            }
+          case "medicine":
+            if (myCaravan.medicine < amt) {
+              console.log("failed medicine check");
+              failedCheck();
+              return true;
+            } else {
+              console.log("passed medicine check");
+              return false;
+            }
+          case "guns":
+            if (myCaravan.guns < amt) {
+              console.log("failed guns check");
+              failedCheck();
+              return true;
+            } else {
+              console.log("passed guns check");
+              return false;
+            }
+          case "ammo":
+            if (myCaravan.ammo < amt) {
+              console.log("failed ammo check");
+              failedCheck();
+              return true;
+            } else {
+              console.log("passed ammo check");
+              return false;
+            }
+        }
+      }
+
+      function prereqCheck(prompt) {
+        console.log("Prompt passed as argument: " + prompt);
+        currentIndex = 5;
+        for (i = currentIndex; prompts[prompt][i] !== undefined; i += 2) {
+          console.log("i: " + i);
+          type = prompts[prompt][i];
+          amt = prompts[prompt][i + 1];
+          console.log("type: " + type);
+          console.log("amt: " + amt);
+          console.log("invoking prerequesite typecheck");
+          if (typeCheck(type, amt) === true) {
+            console.log("typeCheck is true");
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function drawMe() {
+        window.addEventListener("keydown", function contPlz(e) {
+          if (e.keyCode === 32) {
+            backgroundTerrain();
+            myCaravan.drawIt();
+            for (i = 0; i < members.length; i++) {
+              members[i].drawMe();
+            }
+            drawSupplies();
+            window.removeEventListener("keydown", contPlz);
+            // window.removeEventListener("keydown", pickOne);
+            window.interval = setInterval(updateGame, 5000);
+            return;
+          }
+        });
+      }
+
+      // Dialog boxes, and the logic needed to populate and interact with them. It's a damned mess, but it works, and that's the important part. Abandon all hope of reason, ye who enter here.
+
+      function TextPrompt() {
+        ctx = myGameArea.context;
+        ctx.fillStyle = "white";
+        ctx.fillRect(
+          ctx.canvas.width / 3 / 2,
+          ctx.canvas.height / 3 / 2,
+          (ctx.canvas.width / 3) * 2,
+          (ctx.canvas.height / 3) * 2
+        );
+        ctx.fillStyle = "black";
+        ctx.font = "20px Arial";
+        maxWidth = 620;
+        lineHeight = 30;
+        chosen = 0;
+        // Chooses a prompt
+        promptChoice = function () {
+          chosen = Math.floor(Math.random() * prompts.length);
+        };
+        promptChoice();
+        wrapText(
+          ctx,
+          prompts[chosen][0],
+          prompts[chosen][1],
+          prompts[chosen][2],
+          ctx.canvas.width / 3 / 2 + 10,
+          ctx.canvas.height / 3 / 2 + 30,
+          maxWidth,
+          lineHeight
+        );
+        console.log("Adding initial pickOne listener");
+        window.addEventListener("keydown", function pickOne(e) {
+          // User chose to interact with event
+          if (e.keyCode === 49) {
+            console.log("Removing initial pickOne event listener");
+            window.removeEventListener("keydown", pickOne);
+            ctx.fillStyle = "white";
+            ctx.fillRect(
+              ctx.canvas.width / 3 / 2,
+              ctx.canvas.height / 3 / 2,
+              (ctx.canvas.width / 3) * 2,
+              (ctx.canvas.height / 3) * 2
+            );
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            choice = Math.floor(Math.random() * 2);
+            // Check that required supplies don't exceed available ones.
+            if (prompts[chosen].length > 3) {
+              type = prompts[chosen][3];
+              amt = prompts[chosen][4];
+              console.log("type: " + type);
+              console.log("amt: " + amt);
+              console.log("Invoking typecheck 1");
+              if (typeCheck(type, amt) === true) {
+                console.log("typeCheck is true");
+                drawMe();
+                //not sure about these returns, added while drunk. they seem ok but until i can crush the bugs they remain sus.
+                return;
+              }
+              console.log("invoking typecheck for comparison");
+              if (
+                prompts[chosen].length > 5 &&
+                typeCheck(type, amt) === false
+              ) {
+                if (prereqCheck(chosen) === true) {
+                  drawMe();
+                  return;
+                } else {
+                  console.log("Wrap results, passed prerequisite typechecks");
+                  wrapText(
+                    ctx,
+                    results[chosen][choice],
+                    results[chosen][choice + 3],
+                    "Press space to continue",
+                    ctx.canvas.width / 3 / 2 + 10,
+                    ctx.canvas.height / 3 / 2 + 30,
+                    maxWidth,
+                    lineHeight
+                  );
+                  console.log("Removing pickOne listener");
+                  window.removeEventListener("keydown", pickOne);
+                  // Rewards player and redraws screen
+                  console.log("Adding moveOn listening");
+                  window.addEventListener("keydown", function moveOn(e) {
+                    if (e.keyCode === 32) {
+                      console.log("choice: " + choice);
+                      // lucky outcome
+                      if (choice === 0) {
+                        console.log("choice 0 triggered");
+                        console.log(
+                          "value to compare to i: " +
+                            results[chosen][results[chosen].length - 2]
+                        );
+                        for (
+                          i = 0;
+                          i < results[chosen][results[chosen].length - 2];
+                          i++
+                        ) {
+                          console.log("giving reward");
+                          giveReward(
+                            rewards[chosen][choice],
+                            rewards[chosen][choice + 1]
+                          );
+                          console.log("given reward");
+                          choice += 2;
+                        }
+                      }
+                      // unlucky outcome
+                      if (choice === 1) {
+                        console.log("choice 1 triggered");
+                        choice =
+                          results[chosen][results[chosen].length - 2] * 2;
+                        console.log(
+                          "new choice definition for rewards: " + choice
+                        );
+                        console.log(
+                          "value to compare to i: " +
+                            results[chosen][results[chosen].length - 1]
+                        );
+                        for (
+                          i = 0;
+                          i < results[chosen][results[chosen].length - 1];
+                          i++
+                        ) {
+                          console.log("giving reward");
+                          giveReward(
+                            rewards[chosen][choice],
+                            rewards[chosen][choice + 1]
+                          );
+                          console.log("given reward");
+                          choice += 2;
+                        }
+                      }
+                      console.log("Removing moveOn event listener");
+                      window.removeEventListener("keydown", moveOn);
+                      backgroundTerrain();
+                      myCaravan.drawIt();
+                      for (i = 0; i < members.length; i++) {
+                        members[i].drawMe();
+                      }
+                      drawSupplies();
+                      console.log(
+                        "setting new interval, rewards given after typechecks passed"
+                      );
+                      window.interval = setInterval(updateGame, 5000);
+                    }
+                  });
+                }
+              } else {
+                if (typeCheck(type, amt) !== true) {
+                  console.log("Wrap results");
+                  wrapText(
+                    ctx,
+                    results[chosen][choice],
+                    results[chosen][choice + 3],
+                    "Press space to continue",
+                    ctx.canvas.width / 3 / 2 + 10,
+                    ctx.canvas.height / 3 / 2 + 30,
+                    maxWidth,
+                    lineHeight
+                  );
+                  console.log("Removing pickOne event listener");
+                  window.removeEventListener("keydown", pickOne);
+                  // Rewards player and redraws screen
+                  console.log("Adding moveOn event listener");
+                  window.addEventListener("keydown", function moveOn(e) {
+                    if (e.keyCode === 32) {
+                      console.log("choice: " + choice);
+                      // lucky outcome
+                      if (choice === 0) {
+                        console.log("choice 0 triggered");
+                        console.log(
+                          "value to compare to i: " +
+                            results[chosen][results[chosen].length - 2]
+                        );
+                        for (
+                          i = 0;
+                          i < results[chosen][results[chosen].length - 2];
+                          i++
+                        ) {
+                          console.log("giving reward");
+                          giveReward(
+                            rewards[chosen][choice],
+                            rewards[chosen][choice + 1]
+                          );
+                          console.log("given reward");
+                          choice += 2;
+                        }
+                      }
+                      // unlucky outcome
+                      if (choice === 1) {
+                        console.log("choice 1 triggered");
+                        choice =
+                          results[chosen][results[chosen].length - 2] * 2;
+                        console.log(
+                          "new choice definition for rewards: " + choice
+                        );
+                        console.log(
+                          "value to compare to i: " +
+                            results[chosen][results[chosen].length - 1]
+                        );
+                        for (
+                          i = 0;
+                          i < results[chosen][results[chosen].length - 1];
+                          i++
+                        ) {
+                          console.log("giving reward");
+                          giveReward(
+                            rewards[chosen][choice],
+                            rewards[chosen][choice + 1]
+                          );
+                          console.log("given reward");
+                          choice += 2;
+                        }
+                      }
+                      console.log("Removing moveOn event listener");
+                      window.removeEventListener("keydown", moveOn);
+                      backgroundTerrain();
+                      myCaravan.drawIt();
+                      for (i = 0; i < members.length; i++) {
+                        members[i].drawMe();
+                      }
+                      drawSupplies();
+                      console.log("setting new interval, rewards given");
+                      window.interval = setInterval(updateGame, 5000);
+                    }
+                  });
+                }
+                return;
+              }
+            }
+            // If the chosen prompt is less than length 4
+            else {
+              console.log("Wrap results");
+              wrapText(
+                ctx,
+                results[chosen][choice],
+                results[chosen][choice + 3],
+                "Press space to continue",
+                ctx.canvas.width / 3 / 2 + 10,
+                ctx.canvas.height / 3 / 2 + 30,
+                maxWidth,
+                lineHeight
+              );
+              console.log("Removing pickOne event listener");
+              window.removeEventListener("keydown", pickOne);
+              // Rewards player and redraws screen
+              console.log("Adding moveOn event listener");
+              window.addEventListener("keydown", function moveOn(e) {
+                if (e.keyCode === 32) {
+                  console.log("choice: " + choice);
+                  // lucky outcome
+                  if (choice === 0) {
+                    console.log("choice 0 triggered");
+                    console.log(
+                      "value to compare to i: " +
+                        results[chosen][results[chosen].length - 2]
+                    );
+                    for (
+                      i = 0;
+                      i < results[chosen][results[chosen].length - 2];
+                      i++
+                    ) {
+                      console.log("giving reward");
+                      giveReward(
+                        rewards[chosen][choice],
+                        rewards[chosen][choice + 1]
+                      );
+                      console.log("given reward");
+                      choice += 2;
+                    }
+                  }
+                  // unlucky outcome
+                  if (choice === 1) {
+                    console.log("choice 1 triggered");
+                    choice = results[chosen][results[chosen].length - 2] * 2;
+                    console.log("new choice definition for rewards: " + choice);
+                    console.log(
+                      "value to compare to i: " +
+                        results[chosen][results[chosen].length - 1]
+                    );
+                    for (
+                      i = 0;
+                      i < results[chosen][results[chosen].length - 1];
+                      i++
+                    ) {
+                      console.log("giving reward");
+                      giveReward(
+                        rewards[chosen][choice],
+                        rewards[chosen][choice + 1]
+                      );
+                      console.log("given reward");
+                      choice += 2;
+                    }
+                  }
+                  console.log("Removing moveOn event listener");
+                  window.removeEventListener("keydown", moveOn);
+                  backgroundTerrain();
+                  myCaravan.drawIt();
+                  for (i = 0; i < members.length; i++) {
+                    members[i].drawMe();
+                  }
+                  drawSupplies();
+                  console.log("setting new interval, rewards given");
+                  window.interval = setInterval(updateGame, 5000);
+                }
+              });
+            }
+          }
+          // User chose to not interact with event.
+          if (e.keyCode === 50) {
+            console.log("Choice 2");
+            console.log("Removing initial pickOne event listener");
+            window.removeEventListener("keydown", pickOne);
+            ctx.fillStyle = "white";
+            ctx.fillRect(
+              ctx.canvas.width / 3 / 2,
+              ctx.canvas.height / 3 / 2,
+              (ctx.canvas.width / 3) * 2,
+              (ctx.canvas.height / 3) * 2
+            );
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            wrapText(
+              ctx,
+              results[chosen][2],
+              "",
+              "Press space to continue",
+              ctx.canvas.width / 3 / 2 + 10,
+              ctx.canvas.height / 3 / 2 + 30,
+              maxWidth,
+              lineHeight
+            );
+            console.log("Adding moveOn event listener");
+            window.addEventListener("keydown", function moveOn(e) {
+              if (e.keyCode === 32) {
+                console.log("Removing moveOn event listener");
+                window.removeEventListener("keydown", moveOn);
+                backgroundTerrain();
+                myCaravan.drawIt();
+                for (i = 0; i < members.length; i++) {
+                  members[i].drawMe();
+                }
+                drawSupplies();
+                console.log("setting new interval, user ignored event");
+                window.interval = setInterval(updateGame, 1000);
+              }
+            });
+          }
+        });
+      }
+
+      daysLeft = 10;
+
+      usedNames = [];
+
+      names = [
+        "Alan",
+        "Alice",
+        "Bill",
+        "Betty",
+        "Carl",
+        "Clarice",
+        "Dwayne",
+        "Delores",
+        "Erlich",
+        "Eva",
+        "Franklin",
+        "Francisca",
+        "Greg",
+        "Gertrude",
+        "Hidalgo",
+        "Hippolyta",
+        "Ivan",
+        "Irene",
+        "Jack",
+        "Jill",
+        "Kristoff",
+        "Karen",
+        "Lewis",
+        "Lydia",
+        "Mike",
+        "Mandy",
+        "Norm",
+        "Nancy",
+        "Otis",
+        "Ophelia",
+        "Paul",
+        "Penelope",
+        "Rob",
+        "Ruby",
+        "Steve",
+        "Sandy",
+        "Tobias",
+        "Tilly",
+        "Uriel",
+        "Ursula",
+        "Vic",
+        "Velma",
+        "Wayne",
+        "Wendy",
+        "Xavier",
+        "Yeezy",
+        "Yolanda",
+        "Zach",
+        "Zoe",
+      ];
+
+      skinTones = ["sienna", "peru", "sandybrown", "burlywood", "navajowhite"];
+
+      // Text prompts and their resolutions. Not thrilled about the way they're handled right now, but it works.
+
+      usedPrompts = [];
+
+      failure =
+        "You don't have the resources necessary for this task. You have no choice but to move on.";
+
+      prompts = [
+        [
+          "Strange tracks cross the trail ahead of you, leading into the deep ochre woods. They look similar to fresh hoofprints, but the dimensions are wrong. If you manage to hunt the creature you could increase your available food considerably, but would have to use a medical test to ensure that the meat was edible.",
+          "Press 1 to hunt the creature",
+          "Press 2 to ignore the tracks",
+          "guns",
+          1,
+          "ammo",
+          30,
+          "medicine",
+          1,
+        ],
+        [
+          "You come across vibrant cerulean pods sprouting from the ground. They may be edible, but you would have to use a medical test kit to be sure.",
+          "Press 1 to test the pods",
+          "Press 2 to leave them alone",
+          "medicine",
+          1,
+        ],
+        [
+          "On the horizon you see more wreckage from the drop-pod. As you approach the debris you don't immediately see anything that has survived the crash, but you could dig through the wreckage for supplies if you feel it's worth your time.",
+          "Press 1 to search the wreckage",
+          "Press 2 to ignore it and continue",
+        ],
+        [
+          "You hear a repetetive beeping sound coming from bushes. Brushing them aside, you find a secured firearms case. It's rigged with an explosive charge to dissuade thieves, but the seals and bindings have been damaged.",
+          "Press 1 to attempt to retrieve the gun",
+          "Press 2 to leave the case alone",
+        ],
+        [
+          "Suddenly, gunfire rings out. Someone or something is firing at you from a rocky ledge from the south. Whatever you're going to do, you better do it fast.",
+          "Press 1 to fight",
+          "Press 2 to run",
+          "guns",
+          1,
+          "ammo",
+          30,
+        ],
+      ];
+
+      results = [
+        [
+          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Yak, except for the 5 eyes and frills along its spine. It takes 10 shots but the creature drops. Triumphant, you drag it back to the caravan and your medical kit clears it for consumption.",
+          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Bull, except that it's twice as large and has retractable claws. You barely escape by firing 30 bullets as you run, someone sustains an awful wound in the process.",
+          "You decide to ignore the strange tracks, erring on the side of caution. Not only could the creature be dangerous, but it may not even be edible. You gain nothing, but lose nothing.",
+          "Lose 10 ammo, lose 1 medicine, gain 20 food",
+          "Lose 30 ammo, hunter sustained an injury",
+          3,
+          2,
+        ],
+        [
+          "You imagine what the strange vegetation might taste like as you wait for the test to finish. After a few minutes the pods are declared not only edible, but some sort of fruit. You gain 10 food as you load it into the caravan.",
+          "You imagine what the strange vegetation might taste like as you wait for the test to finish. You cease wondering however when the test comes back negative; it would send you into toxic shock in under a minute. Disappointed, you continue your journey.",
+          "You choose to ignore the pods and save the medical kit. There's no telling when you may need it for an emergency.",
+          "Gain 10 food, lose 1 medicine",
+          "Lose 1 medicine",
+          2,
+          1,
+        ],
+        [
+          "You wonder what awaits you as you unearth the debris. In a lucky turn, a couple of medical kits survived the crash.",
+          "You wonder what awaits you as you unearth the debris. It turns out to be nothing. Disappointed, you continue on your way.",
+          "You decide to ignore the wreckage and use that time to move closer to your goal.",
+          "Gain 2 medicine",
+          "Sadly you find nothing",
+          1,
+          0,
+        ],
+        [
+          "Slowly, carefully, you attempt to bypass the security charge. You slip the mangled safety gear off with expert care, and it doesn't activate.",
+          "Slowly, carefully, you attempt to bypass the security charge. The damage it's sustained must have made it even more sensitive, because it explodes almost as soon as you attempt to move it.",
+          "You decide to leave the malfunctioning explosives alone.",
+          "Gained a gun and some ammo",
+          "Someone sustained an injury",
+          2,
+          1,
+        ],
+        [
+          "Shots crash against the brittle rock, plunge into the soil around you. You steel your nerves, take aim and fire at your attacker. As the gunfire ceases, you investigate carefully. Some sort of bipedal reptilian must have found a rifle and some ammunition from the dropship. The gun took one of your shots and is useless, but you collect the remaining ammo.",
+          "Shots crash against the brittle rock, plunge into the soil around you. Your nerve fails you as a bullet smashes your rifle to useless splinters, and you flee in a panic.",
+          "This is madness, you're no soldier. You sprint into the undergrowth as bullets whizz past you. When you stop running your lungs are burning and your heart is hammering, but you've somehow emerged unscathed.",
+          "Gained 30 ammo",
+          "Lost a gun",
+          1,
+          1,
+        ],
+      ];
+
+      // Rewards
+
+      rewards = [
+        ["ammo", -10, "medicine", -1, "food", 20, "ammo", -30, "wound", 2],
+        ["food", 10, "medicine", -1, "medicine", -1],
+        ["medicine", 2],
+        ["guns", 1, "ammo", 50, "wound", 2],
+        ["ammo", 30, "guns", -1],
+      ];
+
+      function giveReward(type, amt) {
+        type = type;
+        console.log("type: " + type);
+        amt = amt;
+        console.log("amt: " + amt);
+        if (type === "ammo") {
+          console.log("Ammo add/sub");
+          myCaravan.ammo += amt;
+          console.log("myCaravan.ammo: " + myCaravan.ammo);
+        }
+        if (type === "medicine") {
+          myCaravan.medicine += amt;
+        }
+        if (type === "food") {
+          myCaravan.food += amt;
+        }
+        if (type === "guns") {
+          myCaravan.guns += amt;
+        }
+        if (type === "wound") {
+          wounded = members[Math.floor(Math.random() * members.length)];
+          name = wounded.name;
+          wounded.wound += amt;
+          console.log("name of wounded party: " + name);
+          console.log("confirm accquisition of wound: " + wounded.wound);
+        }
+      }
+
+      // Draws the background
+
+      function backgroundTerrain() {
+        ctx = myGameArea.context;
+        ctx.fillStyle = "lightskyblue";
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height / 2);
+        ctx.fillStyle = "limegreen";
+        ctx.fillRect(
+          0,
+          ctx.canvas.height / 2,
+          ctx.canvas.width,
+          ctx.canvas.height / 4
+        );
+        ctx.fillStyle = "saddlebrown";
+        ctx.fillRect(
+          0,
+          ctx.canvas.height - ctx.canvas.height / 4,
+          ctx.canvas.width,
+          ctx.canvas.height / 4
+        );
+      }
+
+      // Holds the caravan members.
+
+      members = [];
+
+      // Makes caravan members.
+
+      function Person(x, y) {
+        this.name = names[Math.floor(Math.random() * names.length)];
+        this.x = x;
+        this.y = y;
+        this.wound = 0;
+        this.hunger = 0;
+        this.skinCol = skinTones[Math.floor(Math.random() * skinTones.length)];
+        this.bodyCol =
+          "rgb(" +
+          Math.floor(Math.random() * 255) +
+          "," +
+          Math.floor(Math.random() * 255) +
+          "," +
+          Math.floor(Math.random() * 255) +
+          ")";
+        this.legCol =
+          "rgb(" +
+          Math.floor(Math.random() * 255) +
+          "," +
+          Math.floor(Math.random() * 255) +
+          "," +
+          Math.floor(Math.random() * 255) +
+          ")";
+        this.drawMe = drawMe.bind(this);
+        function drawMe() {
+          ctx.fillStyle = this.skinCol;
+          ctx.fillRect(x, y, 10, 10);
+          ctx.fillStyle = this.bodyCol;
+          ctx.fillRect(x, y + 10, 10, 20);
+          ctx.fillStyle = this.legCol;
+          ctx.fillRect(x, y + 30, 10, 20);
+        }
+        this.drawMe();
+      }
+
+      // The big kahuna.
+
+      function Caravan(x, y, pop, food, medicine, guns, ammo) {
+        this.x = x;
+        this.y = y;
+        this.pop = pop;
+        this.food = food;
+        this.medicine = medicine;
+        this.guns = guns;
+        this.ammo = ammo;
+        this.drawIt = drawIt.bind(this);
+        ctx = myGameArea.context;
+        // Actual caravan, for hauling supplies
+        function drawIt() {
+          ctx.fillStyle = "lightsteelblue";
+          ctx.fillRect(x, y, 60, 30);
+          grd1 = ctx.createLinearGradient(0, y + 30, 0, y + 50);
+          grd1.addColorStop(0, "rgba(0, 255, 255, 1)");
+          grd1.addColorStop(1, "rgba(0, 255, 255, 0)");
+          ctx.fillStyle = grd1;
+          ctx.fillRect(x, y + 30, 60, 20);
+        }
+        drawIt();
+        // Member maker
+        for (i = 0; i < pop; i++) {
+          if (members.length === 0) {
+            members.push(new Person(this.x - 20, this.y));
+          } else {
+            members.push(new Person(members.slice(-1)[0].x - 20, this.y));
+          }
+        }
+      }
+
+      function updateGame() {
+        clearInterval(window.interval);
+        daysLeft -= 1;
+        if (daysLeft === 0) {
+          console.log("Destination reached!");
+          myGameArea.stop();
+          return;
+        } else {
+          // wound check
+          console.log("Wound check running");
+          for (i = 0; i < members.length; i++) {
+            if (members[i].wound > 1) {
+              console.log(
+                members[i].name + " has sustained too many wounds. They perish."
+              );
+              members.splice(i, 1);
+            }
+          }
+          // maybe also a prompt for healing?
+          console.log("myCaravan.food: " + myCaravan.food);
+          console.log("members eating");
+          // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
+          chowLine = members.length - 1;
+          foodResult = myCaravan.food - members.length;
+          console.log("foodResult: " + foodResult);
+          console.log("chowLine: " + chowLine);
+          currentMember = 0;
+          if (foodResult > 0) {
+            for (i = chowLine; i > -1; i--) {
+              myCaravan.food -= 1;
+              // Hunger subtraction
+              if (members[currentMember].hunger > 0) {
+                console.log(
+                  members[currentMember].name + "'s hunger was reduced."
+                );
+                members[currentMember].hunger -= 1;
+                console.log(
+                  members[currentMember].name +
+                    "'s hunger: " +
+                    members[currentMember].hunger
+                );
+              }
+              currentMember++;
+            }
+          }
+          // If hunger is irreversible beyond a certain point then users are constantly a hair away from dead members. Implementing a 'rest' option should allow users a chance to heal and regain their strength.
+          if (foodResult <= 0) {
+            myCaravan.food = foodResult;
+            console.log("myCaravan.food: " + myCaravan.food);
+            memberIndex = members.length + myCaravan.food;
+            for (i = 0; i < memberIndex; i++) {
+              if (members[i].hunger > 0) {
+                console.log("feeding " + members[i].name);
+                members[i].hunger -= 1;
+              }
+            }
+            console.log("memberIndex: " + memberIndex);
+            for (i = myCaravan.food; i < 0; i++) {
+              console.log("i: " + i);
+              console.log("running hunger application");
+              console.log("applying hunger to: " + members[memberIndex].name);
+              members[memberIndex].hunger += 1;
+              console.log("updated hunger: " + members[memberIndex].hunger);
+              myCaravan.food++;
+              // if (members[memberIndex].hunger > 2) {
+              //   console.log(
+              //     members[memberIndex].name +
+              //       " has gone too long without food. They perish."
+              //   );
+              //   members.splice(memberIndex, 1);
+              // }
+              memberIndex++;
+            }
+            // solution for removing starving members. Not happy with the backwards solution, refer to the reddit thread you made and either institute a while loop with conditional iteration or create a new array using the result of an array.filter
+            for (i = chowLine; i > 0; i--) {
+              if (members[i].hunger > 2) {
+                console.log(
+                  members[i].name +
+                    " has gone too long without food. They perish."
+                );
+                members.splice(i, 1);
+              }
+            }
+          }
+          // starvation
+          // for (j = 0; j < members.length; j++) {
+          //   if (members[j].hunger > 2) {
+          //     console.log("j: " + j);
+          //     console.log(
+          //       members[j].name +
+          //         " has gone too long without food. They perish."
+          //     );
+          //     members.splice(j, 1);
+          //     console.log("members after splice: " + members);
+          //   }
+          //   console.log("new currentMember: " + members[j].name);
+          // }
+        }
+        console.log("Days left: " + daysLeft);
+        console.log("Food stores: " + myCaravan.food);
+        TextPrompt();
+      }
+    </script>
+  </body>
+</html>
