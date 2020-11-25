@@ -124,8 +124,18 @@
         checkMe = window.addEventListener("keydown", function setOff(e) {
           if (e.keyCode === 32) {
             window.removeEventListener("keydown", setOff);
+
+            // decisionPrompt is being drawn over by the redraw code below, and the prompt thrown by updateGame shares the first two keycodes used by decisionPrompt. Once decisionPrompt is implemented properly I can remove the interval and drawing code because it should be handled inside of decisionPrompt.
+
+            // leaving it disabled for the moment so that it doesn't break the game
+
+            // decisionPrompt();
+
             console.log("setting new interval, game start");
             this.interval = setInterval(updateGame, 5000);
+
+            // redraws everything
+
             backgroundTerrain();
             myCaravan.drawIt();
             for (i = 0; i < members.length; i++) {
@@ -274,6 +284,73 @@
             // window.removeEventListener("keydown", pickOne);
             window.interval = setInterval(updateGame, 5000);
             return;
+          }
+        });
+      }
+
+      function decisionPrompt() {
+        console.log("decisionPrompt fired");
+        ctx = myGameArea.context;
+        ctx.fillStyle = "white";
+        ctx.fillRect(
+          ctx.canvas.width / 3 / 2,
+          ctx.canvas.height / 3 / 2,
+          (ctx.canvas.width / 3) * 2,
+          (ctx.canvas.height / 3) * 2
+        );
+        ctx.fillStyle = "black";
+        ctx.font = "20px Arial";
+        maxWidth = 620;
+        lineHeight = 30;
+        wrapText(
+          ctx,
+          "Press 1 to set out.",
+          "Press 2 to check the status of your party.",
+          "Press 3 to heal party members.",
+          ctx.canvas.width / 3 / 2 + 10,
+          ctx.canvas.height / 3 / 2 + 30,
+          maxWidth,
+          lineHeight
+        );
+        window.addEventListener("keydown", function decider(e) {
+          if (e.keyCode === 49) {
+            console.log("Chose to move on");
+            window.removeEventListener("keydown", decider);
+            ctx.fillStyle = "white";
+            ctx.fillRect(
+              ctx.canvas.width / 3 / 2,
+              ctx.canvas.height / 3 / 2,
+              (ctx.canvas.width / 3) * 2,
+              (ctx.canvas.height / 3) * 2
+            );
+            ctx.fillStyle = "black";
+            wrapText();
+          }
+          if (e.keyCode === 50) {
+            console.log("Checking party status");
+            window.removeEventListener("keydown", decider);
+            ctx.fillStyle = "white";
+            ctx.fillRect(
+              ctx.canvas.width / 3 / 2,
+              ctx.canvas.height / 3 / 2,
+              (ctx.canvas.width / 3) * 2,
+              (ctx.canvas.height / 3) * 2
+            );
+            ctx.fillStyle = "black";
+            wrapText();
+          }
+          if (e.keyCode === 51) {
+            console.log("Attempting to heal");
+            window.removeEventListener("keydown", decider);
+            ctx.fillStyle = "white";
+            ctx.fillRect(
+              ctx.canvas.width / 3 / 2,
+              ctx.canvas.height / 3 / 2,
+              (ctx.canvas.width / 3) * 2,
+              (ctx.canvas.height / 3) * 2
+            );
+            ctx.fillStyle = "black";
+            wrapText();
           }
         });
       }
