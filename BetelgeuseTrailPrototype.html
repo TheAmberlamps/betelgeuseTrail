@@ -207,17 +207,20 @@
                     return "badly wounded";
                 }
               }
+              // something odd happening here, eventListener doesn't seem to be added until another key is struck.
+              console.log("Adding event listener");
+              context.fillText(
+                members[membId].name +
+                  " is " +
+                  hungerWords(members[membId].hunger) +
+                  " and " +
+                  woundWords(members[membId].wound) +
+                  ". Please press space to return.",
+                ctx.canvas.width / 3 / 2 + 10,
+                ctx.canvas.height / 3 / 2 + 30
+              );
               window.addEventListener("keydown", function backStep(e) {
-                context.fillText(
-                  members[membId].name +
-                    " is " +
-                    hungerWords(members[membId].hunger) +
-                    " and " +
-                    woundWords(members[membId].wound) +
-                    ". Please press space to return.",
-                  x,
-                  lineHeight
-                );
+                // console.log("inside event listener");
               });
             }
             console.log("currentKey: " + currentKey);
