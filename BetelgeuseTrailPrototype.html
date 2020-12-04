@@ -180,6 +180,7 @@
       }
 
       function wrapText2(context, x, y, maxWidth, lineHeight) {
+        yDef = y;
         context.fillText("Whose status would you like to see?", x, y);
         currentKey = 49;
         window.addEventListener("keydown", function userChoice(e) {
@@ -207,7 +208,6 @@
                     return "badly wounded";
                 }
               }
-              // something odd happening here, eventListener doesn't seem to be added until another key is struck.
               console.log("Adding event listener");
               context.fillText(
                 members[membId].name +
@@ -220,21 +220,35 @@
                 ctx.canvas.height / 3 / 2 + 30
               );
               window.addEventListener("keydown", function backStep(e) {
-                // console.log("inside event listener");
+                if (e.keyCode === 32) {
+                  window.removeEventListener("keydown", backStep);
+                  blankSlate();
+                  wrapText2(
+                    ctx,
+                    ctx.canvas.width / 3 / 2 + 10,
+                    ctx.canvas.height / 3 / 2 + 30,
+                    620,
+                    30
+                  );
+                }
               });
             }
             console.log("currentKey: " + currentKey);
             currentKey++;
           }
         });
-        for (i = 0; i < members.length; i++) {
-          console.log("y: " + y);
-          y += lineHeight;
-          console.log("new y: " + y);
-          console.log("Name: " + members[i].name);
-          tex = [i + 1] + ": " + members[i].name;
-          context.fillText(tex, x, y);
+        function memberDisp() {
+          for (i = 0; i < members.length; i++) {
+            console.log("y: " + y);
+            y += lineHeight;
+            console.log("new y: " + y);
+            console.log("Name: " + members[i].name);
+            tex = [i + 1] + ": " + members[i].name;
+            context.fillText(tex, x, y);
+          }
         }
+        memberDisp();
+        y = yDef;
       }
 
       function blankSlate() {
