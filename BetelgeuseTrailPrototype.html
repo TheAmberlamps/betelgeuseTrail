@@ -233,10 +233,16 @@
                 }
               });
             }
+            if (e.keyCode === 32) {
+              console.log("re-running decisionPrompt");
+              window.removeEventListener("keydown", userChoice);
+              decisionPrompt();
+            }
             console.log("currentKey: " + currentKey);
             currentKey++;
           }
         });
+
         function memberDisp() {
           for (i = 0; i < members.length; i++) {
             console.log("y: " + y);
@@ -246,6 +252,8 @@
             tex = [i + 1] + ": " + members[i].name;
             context.fillText(tex, x, y);
           }
+          y += lineHeight;
+          context.fillText("Press space to return", x, y);
         }
         memberDisp();
         y = yDef;
@@ -420,6 +428,12 @@
           chosen = Math.floor(Math.random() * prompts.length);
         };
         promptChoice();
+        // if (usedPrompts !== undefined) {
+        //   for (i = 0; i < usedPrompts.length; i++) {
+        //     if (usedPrompts[i] === chosen) {
+        //     }
+        //   }
+        // }
         wrapText(
           ctx,
           prompts[chosen][0],
@@ -814,6 +828,8 @@
 
       usedPrompts = [];
 
+      usedNames = [];
+
       failure =
         "You don't have the resources necessary for this task. You have no choice but to move on.";
 
@@ -972,6 +988,19 @@
       // Makes caravan members.
 
       function Person(x, y) {
+        // function nameCheck() {
+        //   chosenName = names[Math.floor(Math.random() * names.length)];
+        //   if (usedNames !== undefined) {
+        //     for (i = 0; i < usedNames.length; i++) {
+        //       if (usedNames[i] === chosenName) {
+        //         nameCheck();
+        //       }
+        //     }
+        //   }
+        // }
+        // nameCheck();
+        // usedNames.push(chosenName);
+        // this.name = chosenName;
         this.name = names[Math.floor(Math.random() * names.length)];
         this.x = x;
         this.y = y;
@@ -1108,13 +1137,6 @@
               members[memberIndex].hunger += 1;
               console.log("updated hunger: " + members[memberIndex].hunger);
               myCaravan.food++;
-              // if (members[memberIndex].hunger > 2) {
-              //   console.log(
-              //     members[memberIndex].name +
-              //       " has gone too long without food. They perish."
-              //   );
-              //   members.splice(memberIndex, 1);
-              // }
               memberIndex++;
             }
             // solution for removing starving members. Not happy with the backwards solution, refer to the reddit thread you made and either institute a while loop with conditional iteration or create a new array using the result of an array.filter
@@ -1128,19 +1150,6 @@
               }
             }
           }
-          // starvation
-          // for (j = 0; j < members.length; j++) {
-          //   if (members[j].hunger > 2) {
-          //     console.log("j: " + j);
-          //     console.log(
-          //       members[j].name +
-          //         " has gone too long without food. They perish."
-          //     );
-          //     members.splice(j, 1);
-          //     console.log("members after splice: " + members);
-          //   }
-          //   console.log("new currentMember: " + members[j].name);
-          // }
         }
         console.log("Days left: " + daysLeft);
         console.log("Food stores: " + myCaravan.food);
