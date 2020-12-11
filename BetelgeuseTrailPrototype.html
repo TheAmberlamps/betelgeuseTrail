@@ -394,7 +394,13 @@
               (ctx.canvas.height / 3) * 2
             );
             ctx.fillStyle = "black";
-            wrapText();
+            backgroundTerrain();
+            myCaravan.drawIt();
+            for (i = 0; i < members.length; i++) {
+              members[i].drawMe();
+            }
+            drawSupplies();
+            window.interval = setInterval(updateGame, 5000);
           }
           if (e.keyCode === 50) {
             console.log("Checking party status");
