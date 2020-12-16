@@ -230,6 +230,8 @@
                     620,
                     30
                   );
+                  currentKey = 49;
+                  return;
                 }
               });
             }
@@ -237,6 +239,8 @@
               console.log("re-running decisionPrompt");
               window.removeEventListener("keydown", userChoice);
               decisionPrompt();
+              currentKey = 49;
+              return;
             }
             console.log("currentKey: " + currentKey);
             currentKey++;
