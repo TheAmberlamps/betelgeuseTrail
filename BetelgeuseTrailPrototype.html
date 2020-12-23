@@ -90,6 +90,7 @@
         drawSupplies();
         blankSlate();
         console.log("Title card");
+        console.log("usedNames status: " + usedNames);
         wrapText(
           ctx,
           "Like many others, you have chosen to set off and colonize brave new worlds. One small catch; your dropship broke apart on entering the atmosphere. A handful of other colonists survived the crash with you, and after scrounging what meager supplies you can find, a plan is settled upon: your only hope is to reach the supply beacon and call down the bulk of your supplies, still in orbit. With no time to waste, you begin your trek across a wild, new world.",
@@ -997,7 +998,10 @@
 
       // Makes caravan members.
 
+      // Current task: implement the commented-out code below to make it impossible for caravan members to have dupl;icate names.
+
       function Person(x, y) {
+        console.log("usedNames status: " + usedNames);
         // function nameCheck() {
         //   chosenName = names[Math.floor(Math.random() * names.length)];
         //   if (usedNames !== undefined) {
@@ -1012,6 +1016,7 @@
         // usedNames.push(chosenName);
         // this.name = chosenName;
         this.name = names[Math.floor(Math.random() * names.length)];
+        usedNames.push(this.name);
         this.x = x;
         this.y = y;
         this.wound = 0;
@@ -1139,10 +1144,7 @@
                 members[i].hunger -= 1;
               }
             }
-            console.log("memberIndex: " + memberIndex);
             for (i = myCaravan.food; i < 0; i++) {
-              console.log("i: " + i);
-              console.log("running hunger application");
               console.log("applying hunger to: " + members[memberIndex].name);
               members[memberIndex].hunger += 1;
               console.log("updated hunger: " + members[memberIndex].hunger);
