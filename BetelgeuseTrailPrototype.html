@@ -28,6 +28,7 @@
           blankSlate();
           totalWounds = 0;
           nearStarvation = 0;
+          usedNames.length = 0;
           for (i = 0; i < members.length; i++) {
             if (members[i].wound > 0) {
               console.log("adding to total wounds");
@@ -90,7 +91,6 @@
         drawSupplies();
         blankSlate();
         console.log("Title card");
-        console.log("usedNames status: " + usedNames);
         wrapText(
           ctx,
           "Like many others, you have chosen to set off and colonize brave new worlds. One small catch; your dropship broke apart on entering the atmosphere. A handful of other colonists survived the crash with you, and after scrounging what meager supplies you can find, a plan is settled upon: your only hope is to reach the supply beacon and call down the bulk of your supplies, still in orbit. With no time to waste, you begin your trek across a wild, new world.",
@@ -998,25 +998,23 @@
 
       // Makes caravan members.
 
-      // Current task: implement the commented-out code below to make it impossible for caravan members to have dupl;icate names.
-
       function Person(x, y) {
-        console.log("usedNames status: " + usedNames);
-        // function nameCheck() {
-        //   chosenName = names[Math.floor(Math.random() * names.length)];
-        //   if (usedNames !== undefined) {
-        //     for (i = 0; i < usedNames.length; i++) {
-        //       if (usedNames[i] === chosenName) {
-        //         nameCheck();
-        //       }
-        //     }
-        //   }
-        // }
-        // nameCheck();
-        // usedNames.push(chosenName);
-        // this.name = chosenName;
-        this.name = names[Math.floor(Math.random() * names.length)];
-        usedNames.push(this.name);
+        function nameCheck() {
+          chosenName = names[Math.floor(Math.random() * names.length)];
+          if (usedNames.length > 0) {
+            for (i = 0; i < usedNames.length; i++) {
+              console.log("i: " + i);
+              if (usedNames[i] === chosenName) {
+                return nameCheck();
+              }
+            }
+            usedNames.push(chosenName);
+          } else {
+            usedNames.push(chosenName);
+          }
+        }
+        nameCheck();
+        this.name = chosenName;
         this.x = x;
         this.y = y;
         this.wound = 0;
@@ -1048,6 +1046,7 @@
           ctx.fillRect(x, y + 30, 10, 20);
         }
         this.drawMe();
+        console.log("usedNames status: " + usedNames);
       }
 
       // The big kahuna.
@@ -1090,11 +1089,6 @@
           console.log("Destination reached!");
           myGameArea.stop();
           return;
-        }
-        if (members.length < 1) {
-          console.log("Everybody's dead!");
-          myGameArea.stop();
-          return;
         } else {
           // wound check
           console.log("Wound check running");
@@ -1110,6 +1104,7 @@
           console.log("myCaravan.food: " + myCaravan.food);
           console.log("members eating");
           // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
+          // well this explains why the last member alive can't starve; 1 - 1 = 0. I hope this fix doesn't prove ugly because I know I did this for a reason at the time.2
           chowLine = members.length - 1;
           foodResult = myCaravan.food - members.length;
           console.log("foodResult: " + foodResult);
@@ -1162,6 +1157,11 @@
               }
             }
           }
+        }
+        if (members.length < 1) {
+          console.log("Everybody's dead!");
+          myGameArea.stop();
+          return;
         }
         console.log("Days left: " + daysLeft);
         console.log("Food stores: " + myCaravan.food);
