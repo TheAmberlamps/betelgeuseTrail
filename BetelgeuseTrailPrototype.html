@@ -83,7 +83,7 @@
           myGameArea.canvas.width / 2,
           myGameArea.canvas.height / 2 + myGameArea.canvas.height / 8,
           8,
-          20,
+          50,
           1,
           2,
           100
@@ -187,7 +187,6 @@
         window.addEventListener("keydown", function userChoice(e) {
           for (i = 0; i < members.length; i++) {
             if (e.keyCode === currentKey) {
-              console.log("member name: " + members[i].name);
               membId = i;
               window.removeEventListener("keydown", userChoice);
               blankSlate();
@@ -243,17 +242,13 @@
               currentKey = 49;
               return;
             }
-            console.log("currentKey: " + currentKey);
             currentKey++;
           }
         });
 
         function memberDisp() {
           for (i = 0; i < members.length; i++) {
-            console.log("y: " + y);
             y += lineHeight;
-            console.log("new y: " + y);
-            console.log("Name: " + members[i].name);
             tex = [i + 1] + ": " + members[i].name;
             context.fillText(tex, x, y);
           }
@@ -481,7 +476,6 @@
               if (typeCheck(type, amt) === true) {
                 console.log("typeCheck is true");
                 drawMe();
-                //not sure about these returns, added while drunk. they seem ok but until i can crush the bugs they remain sus.
                 return;
               }
               console.log("invoking typecheck for comparison");
@@ -935,7 +929,7 @@
       // Rewards
 
       rewards = [
-        ["ammo", -10, "medicine", -1, "food", 20, "ammo", -30, "wound", 2],
+        ["ammo", -10, "medicine", -1, "food", 20, "ammo", -30, "wound", 1],
         ["food", 10, "medicine", -1, "medicine", -1],
         ["medicine", 2],
         ["guns", 1, "ammo", 50, "wound", 2],
@@ -1003,7 +997,6 @@
           chosenName = names[Math.floor(Math.random() * names.length)];
           if (usedNames.length > 0) {
             for (i = 0; i < usedNames.length; i++) {
-              console.log("i: " + i);
               if (usedNames[i] === chosenName) {
                 return nameCheck();
               }
@@ -1046,7 +1039,6 @@
           ctx.fillRect(x, y + 30, 10, 20);
         }
         this.drawMe();
-        console.log("usedNames status: " + usedNames);
       }
 
       // The big kahuna.
@@ -1102,16 +1094,12 @@
           }
           // maybe also a prompt for healing?
           console.log("myCaravan.food: " + myCaravan.food);
-          console.log("members eating");
           // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
-          // well this explains why the last member alive can't starve; 1 - 1 = 0. I hope this fix doesn't prove ugly because I know I did this for a reason at the time.2
-          chowLine = members.length - 1;
           foodResult = myCaravan.food - members.length;
           console.log("foodResult: " + foodResult);
-          console.log("chowLine: " + chowLine);
           currentMember = 0;
           if (foodResult > 0) {
-            for (i = chowLine; i > -1; i--) {
+            for (i = members.length - 1; i > -1; i--) {
               myCaravan.food -= 1;
               // Hunger subtraction
               if (members[currentMember].hunger > 0) {
@@ -1147,7 +1135,7 @@
               memberIndex++;
             }
             // solution for removing starving members. Not happy with the backwards solution, refer to the reddit thread you made and either institute a while loop with conditional iteration or create a new array using the result of an array.filter
-            for (i = chowLine; i > 0; i--) {
+            for (i = members.length - 1; i > -1; i--) {
               if (members[i].hunger > 2) {
                 console.log(
                   members[i].name +
