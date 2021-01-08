@@ -114,7 +114,7 @@
               members[i].drawMe();
             }
             drawSupplies();
-            decisionPrompt();
+            window.interval = setInterval(updateGame, 5000);
           }
         });
       }
@@ -306,6 +306,7 @@
             }
             currentKey++;
           }
+          currentKey = 49;
         });
 
         function memberDisp() {
@@ -430,8 +431,41 @@
         });
       }
 
+      function deathPrompt(name) {
+        console.log("deathPrompt fired: " + name + " has perished.");
+        blankSlate();
+        ctx = myGameArea.context;
+        wrapText(
+          ctx,
+          name + " has sustained too many wounds. They perish.",
+          "Press space to move on.",
+          "",
+          ctx.canvas.width / 3 / 2 + 10,
+          ctx.canvas.height / 3 / 2 + 30,
+          maxWidth,
+          lineHeight
+        );
+        window.addEventListener("keydown", function movinOn(e) {
+          if (e.keyCode === 32) {
+            window.removeEventListener("keydown", movinOn);
+            console.log("listener blasted");
+          }
+        });
+      }
+
       function decisionPrompt() {
+        // Ok, a few things to work out here. DeathPrompt is firing when it's supposed to and so far as I can tell is functioning as intended, but they all fire off sequentially then get wiped out and overwritten by the blankSlate and wrapText below.
+        // moving the loop into deathPrompt seems like a solid jumping-off point.
         console.log("decisionPrompt fired");
+        for (i = 0; i < members.length; i++) {
+          if (members[i].wound > 1) {
+            console.log(
+              members[i].name + " has sustained too many wounds. They perish."
+            );
+            deathPrompt(members[i].name);
+            members.splice(i, 1);
+          }
+        }
         ctx = myGameArea.context;
         blankSlate();
         wrapText(
@@ -1139,14 +1173,14 @@
         } else {
           // wound check
           console.log("Wound check running");
-          for (i = 0; i < members.length; i++) {
-            if (members[i].wound > 1) {
-              console.log(
-                members[i].name + " has sustained too many wounds. They perish."
-              );
-              members.splice(i, 1);
-            }
-          }
+          // for (i = 0; i < members.length; i++) {
+          //   if (members[i].wound > 1) {
+          //     console.log(
+          //       members[i].name + " has sustained too many wounds. They perish."
+          //     );
+          //     members.splice(i, 1);
+          //   }
+          // }
           // maybe also a prompt for healing?
           console.log("myCaravan.food: " + myCaravan.food);
           // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
