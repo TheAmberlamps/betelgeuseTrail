@@ -104,15 +104,9 @@
         checkMe = window.addEventListener("keydown", function setOff(e) {
           if (e.keyCode === 32) {
             window.removeEventListener("keydown", setOff);
-
-            // decisionPrompt is being drawn over by the redraw code below, and the prompt thrown by updateGame shares the first two keycodes used by decisionPrompt. Once decisionPrompt is implemented properly I can remove the interval and drawing code because it should be handled inside of decisionPrompt.
-
-            // leaving it disabled for the moment so that it doesn't break the game
-
             console.log("setting new interval, game start");
-            // this.interval = setInterval(updateGame, 5000);
 
-            // redraws everything
+            // redraws everything and displays decisionPrompt
 
             backgroundTerrain();
             myCaravan.drawIt();
@@ -121,13 +115,6 @@
             }
             drawSupplies();
             decisionPrompt();
-            // wrapText2(
-            //   ctx,
-            //   ctx.canvas.width / 3 / 2 + 10,
-            //   ctx.canvas.height / 3 / 2 + 30,
-            //   620,
-            //   30
-            // );
           }
         });
       }
@@ -209,31 +196,106 @@
                 }
               }
               console.log("Adding event listener");
-              context.fillText(
-                members[membId].name +
-                  " is " +
-                  hungerWords(members[membId].hunger) +
-                  " and " +
-                  woundWords(members[membId].wound) +
-                  ". Please press space to return.",
-                ctx.canvas.width / 3 / 2 + 10,
-                ctx.canvas.height / 3 / 2 + 30
-              );
-              window.addEventListener("keydown", function backStep(e) {
-                if (e.keyCode === 32) {
-                  window.removeEventListener("keydown", backStep);
-                  blankSlate();
-                  wrapText2(
-                    ctx,
-                    ctx.canvas.width / 3 / 2 + 10,
-                    ctx.canvas.height / 3 / 2 + 30,
-                    620,
-                    30
-                  );
-                  currentKey = 49;
-                  return;
-                }
-              });
+              if (
+                woundWords(members[membId].wound) === "badly wounded" &&
+                myCaravan.medicine > 0
+              ) {
+                context.fillText(
+                  members[membId].name +
+                    " is " +
+                    hungerWords(members[membId].hunger) +
+                    " and " +
+                    woundWords(members[membId].wound) +
+                    ".",
+                  ctx.canvas.width / 3 / 2 + 10,
+                  ctx.canvas.height / 3 / 2 + 30
+                );
+                context.fillText(
+                  "Press 1 to use a medical kit and heal their wounds,",
+                  x,
+                  y + lineHeight * 2
+                );
+                context.fillText(
+                  "or press space to return.",
+                  x,
+                  y + lineHeight * 3
+                );
+                window.addEventListener("keydown", function backStep(e) {
+                  if (e.keyCode === 32) {
+                    window.removeEventListener("keydown", backStep);
+                    blankSlate();
+                    wrapText2(
+                      ctx,
+                      ctx.canvas.width / 3 / 2 + 10,
+                      ctx.canvas.height / 3 / 2 + 30,
+                      620,
+                      30
+                    );
+                    currentKey = 49;
+                    return;
+                  }
+                  if (e.keyCode === 49) {
+                    blankSlate();
+                    context.fillText(
+                      members[membId].name +
+                        "'s wounds close; they return to good health.",
+                      x,
+                      y
+                    );
+                    context.fillText(
+                      "Press space to return.",
+                      x,
+                      y + lineHeight * 2
+                    );
+                    myCaravan.medicine -= 1;
+                    members[membId].wound -= 1;
+                    if (e.keyCode === 32) {
+                      window.removeEventListener("keydown", backStep);
+                      blankSlate();
+                      wrapText2(
+                        ctx,
+                        ctx.canvas.width / 3 / 2 + 10,
+                        ctx.canvas.height / 3 / 2 + 30,
+                        620,
+                        30
+                      );
+                      currentKey = 49;
+                      return;
+                    }
+                  }
+                });
+              } else {
+                context.fillText(
+                  members[membId].name +
+                    " is " +
+                    hungerWords(members[membId].hunger) +
+                    " and " +
+                    woundWords(members[membId].wound) +
+                    ".",
+                  ctx.canvas.width / 3 / 2 + 10,
+                  ctx.canvas.height / 3 / 2 + 30
+                );
+                context.fillText(
+                  "Press space to return.",
+                  x,
+                  y + lineHeight * 2
+                );
+                window.addEventListener("keydown", function backStep(e) {
+                  if (e.keyCode === 32) {
+                    window.removeEventListener("keydown", backStep);
+                    blankSlate();
+                    wrapText2(
+                      ctx,
+                      ctx.canvas.width / 3 / 2 + 10,
+                      ctx.canvas.height / 3 / 2 + 30,
+                      620,
+                      30
+                    );
+                    currentKey = 49;
+                    return;
+                  }
+                });
+              }
             }
             if (e.keyCode === 32) {
               console.log("re-running decisionPrompt");
@@ -554,16 +616,8 @@
                       }
                       console.log("Removing moveOn event listener");
                       window.removeEventListener("keydown", moveOn);
-                      backgroundTerrain();
-                      myCaravan.drawIt();
-                      for (i = 0; i < members.length; i++) {
-                        members[i].drawMe();
-                      }
-                      drawSupplies();
-                      console.log(
-                        "setting new interval, rewards given after typechecks passed"
-                      );
-                      window.interval = setInterval(updateGame, 5000);
+                      // blankSlate();
+                      decisionPrompt();
                     }
                   });
                 }
@@ -636,14 +690,15 @@
                       }
                       console.log("Removing moveOn event listener");
                       window.removeEventListener("keydown", moveOn);
-                      backgroundTerrain();
-                      myCaravan.drawIt();
-                      for (i = 0; i < members.length; i++) {
-                        members[i].drawMe();
-                      }
-                      drawSupplies();
+                      // backgroundTerrain();
+                      // myCaravan.drawIt();
+                      // for (i = 0; i < members.length; i++) {
+                      //   members[i].drawMe();
+                      // }
+                      // drawSupplies();
                       console.log("setting new interval, rewards given");
-                      window.interval = setInterval(updateGame, 5000);
+                      // window.interval = setInterval(updateGame, 5000);
+                      decisionPrompt();
                     }
                   });
                 }
@@ -716,14 +771,15 @@
                   }
                   console.log("Removing moveOn event listener");
                   window.removeEventListener("keydown", moveOn);
-                  backgroundTerrain();
-                  myCaravan.drawIt();
-                  for (i = 0; i < members.length; i++) {
-                    members[i].drawMe();
-                  }
-                  drawSupplies();
+                  // backgroundTerrain();
+                  // myCaravan.drawIt();
+                  // for (i = 0; i < members.length; i++) {
+                  //   members[i].drawMe();
+                  // }
+                  // drawSupplies();
                   console.log("setting new interval, rewards given");
-                  window.interval = setInterval(updateGame, 5000);
+                  //window.interval = setInterval(updateGame, 5000);
+                  decisionPrompt();
                 }
               });
             }
@@ -757,14 +813,15 @@
               if (e.keyCode === 32) {
                 console.log("Removing moveOn event listener");
                 window.removeEventListener("keydown", moveOn);
-                backgroundTerrain();
-                myCaravan.drawIt();
-                for (i = 0; i < members.length; i++) {
-                  members[i].drawMe();
-                }
-                drawSupplies();
+                // backgroundTerrain();
+                // myCaravan.drawIt();
+                // for (i = 0; i < members.length; i++) {
+                //   members[i].drawMe();
+                // }
+                // drawSupplies();
                 console.log("setting new interval, user ignored event");
-                window.interval = setInterval(updateGame, 1000);
+                // window.interval = setInterval(updateGame, 1000);
+                decisionPrompt();
               }
             });
           }
@@ -829,8 +886,6 @@
 
       skinTones = ["sienna", "peru", "sandybrown", "burlywood", "navajowhite"];
 
-      // Text prompts and their resolutions. Not thrilled about the way they're handled right now, but it works.
-
       usedPrompts = [];
 
       usedNames = [];
@@ -840,7 +895,7 @@
 
       prompts = [
         [
-          "Strange tracks cross the trail ahead of you, leading into the deep ochre woods. They look similar to fresh hoofprints, but the dimensions are wrong. If you manage to hunt the creature you could increase your available food considerably, but would have to use a medical test to ensure that the meat was edible.",
+          "Strange tracks cross the trail ahead of you, leading into the deep ochre woods. They look similar to fresh hoofprints, but the dimensions are wrong. If you manage to hunt the creature you could increase your available food considerably, but would have to use a medical kit to ensure that the meat was edible.",
           "Press 1 to hunt the creature",
           "Press 2 to ignore the tracks",
           "guns",
