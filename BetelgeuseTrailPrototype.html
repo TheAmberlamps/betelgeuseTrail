@@ -434,13 +434,45 @@
         });
       }
 
-      function deathPrompt(name) {
-        console.log("deathPrompt fired: " + name + " has perished.");
+      function deathPrompts() {
+        console.log("deathPrompts fired.");
         blankSlate();
         ctx = myGameArea.context;
+        for (i = 0; i < members.length; i++) {
+          console.log("for loop firing inside deathPrompts");
+          if (members[i].wound > 1) {
+            console.log("members[i]: " + members[i]);
+            console.log("firing before break");
+            break;
+          }
+          // console.log("firing after break");
+          // wrapText(
+          //   ctx,
+          //   members[i].name + " has sustained too many wounds. They perish.",
+          //   "Press space to move on.",
+          //   "",
+          //   ctx.canvas.width / 3 / 2 + 10,
+          //   ctx.canvas.height / 3 / 2 + 30,
+          //   maxWidth,
+          //   lineHeight
+          // );
+          // members.splice(i, 1);
+          // i--;
+          // // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
+          // window.addEventListener("keydown", function movinOn(e) {
+          //   if (e.keyCode === 32) {
+          //     window.removeEventListener("keydown", movinOn);
+          //     console.log("listener blasted");
+          //     deathPrompts();
+          //   }
+          // });
+        }
+        console.log("firing after break");
+        // OK WE'RE ON THE RIGHT TRACK! IT'S BUGGING OUT AT FIRST BUT IT DISPLAYS WHEN THE LISTENER IS TRIGGERED!
+        // After some initial fumbling it seems that I'm a hair away from solving my display issue! After some study I'm sure that it'll be licked in no time.
         wrapText(
           ctx,
-          name + " has sustained too many wounds. They perish.",
+          members[i].name + " has sustained too many wounds. They perish.",
           "Press space to move on.",
           "",
           ctx.canvas.width / 3 / 2 + 10,
@@ -448,11 +480,14 @@
           maxWidth,
           lineHeight
         );
+        members.splice(i, 1);
+        i--;
         // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
         window.addEventListener("keydown", function movinOn(e) {
           if (e.keyCode === 32) {
             window.removeEventListener("keydown", movinOn);
             console.log("listener blasted");
+            deathPrompts();
           }
         });
       }
@@ -463,17 +498,18 @@
         // Maybe store them as objects in a seperate array?
         // Maybe display the number of people that died, the reason, and their names? Seems the easiest way to get the information to the user.
         console.log("decisionPrompt fired");
-        for (i = 0; i < members.length; i++) {
-          if (members[i].wound > 1) {
-            console.log(
-              members[i].name + " has sustained too many wounds. They perish."
-            );
-            //due to a game-freezing bug, deathPrompt is currently disabled. Deaths are working properly now, though.
-            // deathPrompt(members[i].name);
-            members.splice(i, 1);
-            i--;
-          }
-        }
+        // for (i = 0; i < members.length; i++) {
+        //   if (members[i].wound > 1) {
+        //     console.log(
+        //       members[i].name + " has sustained too many wounds. They perish."
+        //     );
+        //     //due to a game-freezing bug, deathPrompt is currently disabled. Deaths are working properly now, though.
+        //     deathPrompts();
+        //     members.splice(i, 1);
+        //     i--;
+        //   }
+        // }
+        deathPrompts();
         ctx = myGameArea.context;
         blankSlate();
         wrapText(
