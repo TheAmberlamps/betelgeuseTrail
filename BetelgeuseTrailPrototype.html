@@ -437,12 +437,14 @@
       promptStatus = 0;
 
       function deathPrompts() {
+        kilt = 0;
         console.log("deathPrompts fired.");
         blankSlate();
         ctx = myGameArea.context;
         for (i = 0; i < members.length; i++) {
           console.log("for loop firing inside deathPrompts");
           if (members[i].wound > 1) {
+            kilt = 1;
             console.log("members.length: " + members.length);
             console.log("firing before break");
             break;
@@ -450,31 +452,39 @@
         }
         console.log("firing after break");
         // don't wrapText if nobody is mortally wounded. Make the wrap and splice conditional.
-        wrapText(
-          ctx,
-          members[i].name + " has sustained too many wounds. They perish.",
-          "Press space to continue.",
-          "",
-          ctx.canvas.width / 3 / 2 + 10,
-          ctx.canvas.height / 3 / 2 + 30,
-          maxWidth,
-          lineHeight
-        );
-        members.splice(i, 1);
-        i--;
-        // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
-        if (members.length > 0) {
-          window.addEventListener("keydown", function movinOn(e) {
-            if (e.keyCode === 32) {
-              window.removeEventListener("keydown", movinOn);
-              console.log("listener blasted");
-              deathPrompts();
-            }
-          });
-        } else {
+        if (kilt === 1) {
+          wrapText(
+            ctx,
+            members[i].name + " has sustained too many wounds. They perish.",
+            "Press space to continue.",
+            "",
+            ctx.canvas.width / 3 / 2 + 10,
+            ctx.canvas.height / 3 / 2 + 30,
+            maxWidth,
+            lineHeight
+          );
+          members.splice(i, 1);
+          i--;
+          // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
+          if (members.length > 0) {
+            window.addEventListener("keydown", function movinOn(e) {
+              if (e.keyCode === 32) {
+                window.removeEventListener("keydown", movinOn);
+                console.log("listener blasted");
+                kilt = 0;
+                deathPrompts();
+              }
+            });
+          }
+        }
+        if (members.length === 0) {
           console.log("Everybody's dead!");
           myGameArea.stop();
           return;
+        } else {
+          console.log("else statement triggered");
+          promptStatus = 1;
+          decisionPrompt();
         }
       }
 
