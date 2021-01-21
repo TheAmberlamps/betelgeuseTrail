@@ -427,7 +427,6 @@
             }
             drawSupplies();
             window.removeEventListener("keydown", contPlz);
-            // window.removeEventListener("keydown", pickOne);
             window.interval = setInterval(updateGame, 5000);
             return;
           }
@@ -465,7 +464,6 @@
           );
           members.splice(i, 1);
           i--;
-          // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
           if (members.length > 0) {
             window.addEventListener("keydown", function movinOn(e) {
               if (e.keyCode === 32) {
@@ -489,11 +487,10 @@
       }
 
       function decisionPrompt() {
-        // Ok, a few things to work out here. DeathPrompt is firing when it's supposed to and so far as I can tell is functioning as intended, but they all fire off sequentially then get wiped out and overwritten by the blankSlate and wrapText below.
-        // After some brief research it seems that pausing within a loop in JS is impossible. Going to have to figure out another way to sequentially work through deathPrompts.
-        // Maybe store them as objects in a seperate array?
-        // Maybe display the number of people that died, the reason, and their names? Seems the easiest way to get the information to the user.
         console.log("decisionPrompt fired");
+        console.log(
+          "so hunger should be implemented in roughly the same place as this is "
+        );
         if (promptStatus === 0) {
           deathPrompts();
         } else {
