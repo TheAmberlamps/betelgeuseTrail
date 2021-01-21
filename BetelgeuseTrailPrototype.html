@@ -113,8 +113,8 @@
             for (i = 0; i < members.length; i++) {
               members[i].drawMe();
               //following 2 lines are for debug purposes only
-              members[i].wound += 2;
-              console.log("Added 2 wounds to " + members[i].name + ".");
+              // members[i].wound += 2;
+              // console.log("Added 2 wounds to " + members[i].name + ".");
             }
             drawSupplies();
             window.interval = setInterval(updateGame, 5000);
@@ -434,6 +434,8 @@
         });
       }
 
+      promptStatus = 0;
+
       function deathPrompts() {
         console.log("deathPrompts fired.");
         blankSlate();
@@ -441,39 +443,17 @@
         for (i = 0; i < members.length; i++) {
           console.log("for loop firing inside deathPrompts");
           if (members[i].wound > 1) {
-            console.log("members[i]: " + members[i]);
+            console.log("members.length: " + members.length);
             console.log("firing before break");
             break;
           }
-          // console.log("firing after break");
-          // wrapText(
-          //   ctx,
-          //   members[i].name + " has sustained too many wounds. They perish.",
-          //   "Press space to move on.",
-          //   "",
-          //   ctx.canvas.width / 3 / 2 + 10,
-          //   ctx.canvas.height / 3 / 2 + 30,
-          //   maxWidth,
-          //   lineHeight
-          // );
-          // members.splice(i, 1);
-          // i--;
-          // // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
-          // window.addEventListener("keydown", function movinOn(e) {
-          //   if (e.keyCode === 32) {
-          //     window.removeEventListener("keydown", movinOn);
-          //     console.log("listener blasted");
-          //     deathPrompts();
-          //   }
-          // });
         }
         console.log("firing after break");
-        // OK WE'RE ON THE RIGHT TRACK! IT'S BUGGING OUT AT FIRST BUT IT DISPLAYS WHEN THE LISTENER IS TRIGGERED!
-        // After some initial fumbling it seems that I'm a hair away from solving my display issue! After some study I'm sure that it'll be licked in no time.
+        // don't wrapText if nobody is mortally wounded. Make the wrap and splice conditional.
         wrapText(
           ctx,
           members[i].name + " has sustained too many wounds. They perish.",
-          "Press space to move on.",
+          "Press space to continue.",
           "",
           ctx.canvas.width / 3 / 2 + 10,
           ctx.canvas.height / 3 / 2 + 30,
@@ -483,13 +463,19 @@
         members.splice(i, 1);
         i--;
         // this eventListener is creating a bug when entering the check party screen; (I assume) this listener is grabbing the keypress passed to leave the party status screen, locking users there and freezing the game.
-        window.addEventListener("keydown", function movinOn(e) {
-          if (e.keyCode === 32) {
-            window.removeEventListener("keydown", movinOn);
-            console.log("listener blasted");
-            deathPrompts();
-          }
-        });
+        if (members.length > 0) {
+          window.addEventListener("keydown", function movinOn(e) {
+            if (e.keyCode === 32) {
+              window.removeEventListener("keydown", movinOn);
+              console.log("listener blasted");
+              deathPrompts();
+            }
+          });
+        } else {
+          console.log("Everybody's dead!");
+          myGameArea.stop();
+          return;
+        }
       }
 
       function decisionPrompt() {
@@ -498,70 +484,65 @@
         // Maybe store them as objects in a seperate array?
         // Maybe display the number of people that died, the reason, and their names? Seems the easiest way to get the information to the user.
         console.log("decisionPrompt fired");
-        // for (i = 0; i < members.length; i++) {
-        //   if (members[i].wound > 1) {
-        //     console.log(
-        //       members[i].name + " has sustained too many wounds. They perish."
-        //     );
-        //     //due to a game-freezing bug, deathPrompt is currently disabled. Deaths are working properly now, though.
-        //     deathPrompts();
-        //     members.splice(i, 1);
-        //     i--;
-        //   }
-        // }
-        deathPrompts();
-        ctx = myGameArea.context;
-        blankSlate();
-        wrapText(
-          ctx,
-          "Press 1 to set out.",
-          "Press 2 to check the status of your party.",
-          "",
-          ctx.canvas.width / 3 / 2 + 10,
-          ctx.canvas.height / 3 / 2 + 30,
-          maxWidth,
-          lineHeight
-        );
-        window.addEventListener("keydown", function decider(e) {
-          if (e.keyCode === 49) {
-            console.log("Chose to move on");
-            window.removeEventListener("keydown", decider);
-            ctx.fillStyle = "white";
-            ctx.fillRect(
-              ctx.canvas.width / 3 / 2,
-              ctx.canvas.height / 3 / 2,
-              (ctx.canvas.width / 3) * 2,
-              (ctx.canvas.height / 3) * 2
-            );
-            ctx.fillStyle = "black";
-            backgroundTerrain();
-            myCaravan.drawIt();
-            for (i = 0; i < members.length; i++) {
-              members[i].drawMe();
+        if (promptStatus === 0) {
+          deathPrompts();
+        } else {
+          console.log("code advancing past deathPrompts");
+          console.log("resetting promptStatus");
+          promptStatus = 0;
+          ctx = myGameArea.context;
+          blankSlate();
+          wrapText(
+            ctx,
+            "Press 1 to set out.",
+            "Press 2 to check the status of your party.",
+            "",
+            ctx.canvas.width / 3 / 2 + 10,
+            ctx.canvas.height / 3 / 2 + 30,
+            maxWidth,
+            lineHeight
+          );
+          window.addEventListener("keydown", function decider(e) {
+            if (e.keyCode === 49) {
+              console.log("Chose to move on");
+              window.removeEventListener("keydown", decider);
+              ctx.fillStyle = "white";
+              ctx.fillRect(
+                ctx.canvas.width / 3 / 2,
+                ctx.canvas.height / 3 / 2,
+                (ctx.canvas.width / 3) * 2,
+                (ctx.canvas.height / 3) * 2
+              );
+              ctx.fillStyle = "black";
+              backgroundTerrain();
+              myCaravan.drawIt();
+              for (i = 0; i < members.length; i++) {
+                members[i].drawMe();
+              }
+              drawSupplies();
+              window.interval = setInterval(updateGame, 5000);
             }
-            drawSupplies();
-            window.interval = setInterval(updateGame, 5000);
-          }
-          if (e.keyCode === 50) {
-            console.log("Checking party status");
-            window.removeEventListener("keydown", decider);
-            ctx.fillStyle = "white";
-            ctx.fillRect(
-              ctx.canvas.width / 3 / 2,
-              ctx.canvas.height / 3 / 2,
-              (ctx.canvas.width / 3) * 2,
-              (ctx.canvas.height / 3) * 2
-            );
-            ctx.fillStyle = "black";
-            wrapText2(
-              ctx,
-              ctx.canvas.width / 3 / 2 + 10,
-              ctx.canvas.height / 3 / 2 + 30,
-              620,
-              30
-            );
-          }
-        });
+            if (e.keyCode === 50) {
+              console.log("Checking party status");
+              window.removeEventListener("keydown", decider);
+              ctx.fillStyle = "white";
+              ctx.fillRect(
+                ctx.canvas.width / 3 / 2,
+                ctx.canvas.height / 3 / 2,
+                (ctx.canvas.width / 3) * 2,
+                (ctx.canvas.height / 3) * 2
+              );
+              ctx.fillStyle = "black";
+              wrapText2(
+                ctx,
+                ctx.canvas.width / 3 / 2 + 10,
+                ctx.canvas.height / 3 / 2 + 30,
+                620,
+                30
+              );
+            }
+          });
+        }
       }
 
       // Dialog boxes, and the logic needed to populate and interact with them. It's a damned mess, but it works, and that's the important part. Abandon all hope of reason, ye who enter here.
@@ -1215,17 +1196,7 @@
           myGameArea.stop();
           return;
         } else {
-          // wound check
-          console.log("Wound check running");
-          // for (i = 0; i < members.length; i++) {
-          //   if (members[i].wound > 1) {
-          //     console.log(
-          //       members[i].name + " has sustained too many wounds. They perish."
-          //     );
-          //     members.splice(i, 1);
-          //   }
-          // }
-          // maybe also a prompt for healing?
+          // hunger logic and depopulation
           console.log("myCaravan.food: " + myCaravan.food);
           // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
           foodResult = myCaravan.food - members.length;
