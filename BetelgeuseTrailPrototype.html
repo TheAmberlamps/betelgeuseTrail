@@ -452,6 +452,7 @@
         console.log("firing after break");
         // don't wrapText if nobody is mortally wounded. Make the wrap and splice conditional.
         if (kilt === 1) {
+          console.log("kilt!");
           wrapText(
             ctx,
             members[i].name + " has sustained too many wounds. They perish.",
@@ -464,7 +465,7 @@
           );
           members.splice(i, 1);
           i--;
-          if (members.length > 0) {
+          if (members.length >= 0) {
             window.addEventListener("keydown", function movinOn(e) {
               if (e.keyCode === 32) {
                 window.removeEventListener("keydown", movinOn);
@@ -474,6 +475,8 @@
               }
             });
           }
+          // this may be the fix we've been looking for
+          return;
         }
         if (members.length === 0) {
           console.log("Everybody's dead!");
