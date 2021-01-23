@@ -57,7 +57,9 @@
             maxWidth,
             lineHeight
           );
-          console.log("daysLeft - should be 0: " + daysLeft);
+          console.log(
+            "daysLeft - should be 0 unless all members are dead: " + daysLeft
+          );
           daysLeft = 10;
           console.log("members.length: " + members.length);
           members.splice(0, members.length);
@@ -113,7 +115,7 @@
             for (i = 0; i < members.length; i++) {
               members[i].drawMe();
               //following 2 lines are for debug purposes only
-              // members[i].wound += 2;
+              // members[i].hunger += 3;
               // console.log("Added 2 wounds to " + members[i].name + ".");
             }
             drawSupplies();
@@ -433,7 +435,7 @@
         });
       }
 
-      promptStatus = 0;
+      dPromptStatus = 0;
 
       function deathPrompts() {
         kilt = 0;
@@ -484,22 +486,80 @@
           return;
         } else {
           console.log("else statement triggered");
-          promptStatus = 1;
+          dPromptStatus = 1;
           decisionPrompt();
         }
       }
 
+      hPromptStatus = 0;
+
+      function hungPrompts() {
+        console.log("myCaravan.food: " + myCaravan.food);
+        // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
+        foodResult = myCaravan.food - members.length;
+        console.log("foodResult: " + foodResult);
+        currentMember = 0;
+        if (foodResult > 0) {
+          for (i = members.length - 1; i > -1; i--) {
+            myCaravan.food -= 1;
+            // Hunger subtraction
+            if (members[currentMember].hunger > 0) {
+              console.log(
+                members[currentMember].name + "'s hunger was reduced."
+              );
+              members[currentMember].hunger -= 1;
+              console.log(
+                members[currentMember].name +
+                  "'s hunger: " +
+                  members[currentMember].hunger
+              );
+            }
+            currentMember++;
+          }
+        }
+        // If hunger is irreversible beyond a certain point then users are constantly a hair away from dead members. Implementing a 'rest' option should allow users a chance to heal and regain their strength.
+        if (foodResult <= 0) {
+          myCaravan.food = foodResult;
+          console.log("myCaravan.food: " + myCaravan.food);
+          memberIndex = members.length + myCaravan.food;
+          for (i = 0; i < memberIndex; i++) {
+            if (members[i].hunger > 0) {
+              console.log("feeding " + members[i].name);
+              members[i].hunger -= 1;
+            }
+          }
+          for (i = myCaravan.food; i < 0; i++) {
+            console.log("applying hunger to: " + members[memberIndex].name);
+            members[memberIndex].hunger += 1;
+            console.log("updated hunger: " + members[memberIndex].hunger);
+            myCaravan.food++;
+            memberIndex++;
+          }
+          // solution for removing starving members. Not happy with the backwards solution, refer to the reddit thread you made and either institute a while loop with conditional iteration or create a new array using the result of an array.filter
+          // lol, of course the solution was neither of those things; I simply added a decrement to i on slice to maintan array position.
+          for (i = 0; i < members.length; i++) {
+            if (members[i].hunger > 2) {
+              console.log(
+                members[i].name +
+                  " has gone too long without food. They perish."
+              );
+              members.splice(i, 1);
+              i--;
+            }
+          }
+        }
+        hPromptStatus = 1;
+      }
+
       function decisionPrompt() {
         console.log("decisionPrompt fired");
-        console.log(
-          "so hunger should be implemented in roughly the same place as this is "
-        );
-        if (promptStatus === 0) {
+        if (hPromptStatus === 0) {
+          hungPrompts();
+        }
+        if (dPromptStatus === 0) {
           deathPrompts();
         } else {
-          console.log("code advancing past deathPrompts");
-          console.log("resetting promptStatus");
-          promptStatus = 0;
+          console.log("code advancing past hungPrompts & deathPrompts");
           ctx = myGameArea.context;
           blankSlate();
           wrapText(
@@ -531,6 +591,8 @@
               }
               drawSupplies();
               window.interval = setInterval(updateGame, 5000);
+              hPromptStatus = 0;
+              dPromptStatus = 0;
             }
             if (e.keyCode === 50) {
               console.log("Checking party status");
@@ -1205,70 +1267,8 @@
           console.log("Destination reached!");
           myGameArea.stop();
           return;
-        } else {
-          // hunger logic and depopulation
-          console.log("myCaravan.food: " + myCaravan.food);
-          // This is my rework for hunger, it should allow for individual members to have their hunger levels dynamically altered.
-          foodResult = myCaravan.food - members.length;
-          console.log("foodResult: " + foodResult);
-          currentMember = 0;
-          if (foodResult > 0) {
-            for (i = members.length - 1; i > -1; i--) {
-              myCaravan.food -= 1;
-              // Hunger subtraction
-              if (members[currentMember].hunger > 0) {
-                console.log(
-                  members[currentMember].name + "'s hunger was reduced."
-                );
-                members[currentMember].hunger -= 1;
-                console.log(
-                  members[currentMember].name +
-                    "'s hunger: " +
-                    members[currentMember].hunger
-                );
-              }
-              currentMember++;
-            }
-          }
-          // If hunger is irreversible beyond a certain point then users are constantly a hair away from dead members. Implementing a 'rest' option should allow users a chance to heal and regain their strength.
-          if (foodResult <= 0) {
-            myCaravan.food = foodResult;
-            console.log("myCaravan.food: " + myCaravan.food);
-            memberIndex = members.length + myCaravan.food;
-            for (i = 0; i < memberIndex; i++) {
-              if (members[i].hunger > 0) {
-                console.log("feeding " + members[i].name);
-                members[i].hunger -= 1;
-              }
-            }
-            for (i = myCaravan.food; i < 0; i++) {
-              console.log("applying hunger to: " + members[memberIndex].name);
-              members[memberIndex].hunger += 1;
-              console.log("updated hunger: " + members[memberIndex].hunger);
-              myCaravan.food++;
-              memberIndex++;
-            }
-            // solution for removing starving members. Not happy with the backwards solution, refer to the reddit thread you made and either institute a while loop with conditional iteration or create a new array using the result of an array.filter
-            // lol, of course the solution was neither of those things; I simply added a decrement to i on slice to maintan array position.
-            for (i = 0; i < members.length; i++) {
-              if (members[i].hunger > 2) {
-                console.log(
-                  members[i].name +
-                    " has gone too long without food. They perish."
-                );
-                members.splice(i, 1);
-                i--;
-              }
-            }
-          }
-        }
-        if (members.length < 1) {
-          console.log("Everybody's dead!");
-          myGameArea.stop();
-          return;
         }
         console.log("Days left: " + daysLeft);
-        console.log("Food stores: " + myCaravan.food);
         TextPrompt();
       }
     </script>
