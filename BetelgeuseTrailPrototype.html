@@ -85,10 +85,10 @@
           myGameArea.canvas.width / 2,
           myGameArea.canvas.height / 2 + myGameArea.canvas.height / 8,
           8,
-          50,
-          0,
+          25,
           2,
-          100
+          0,
+          50
         );
         drawSupplies();
         blankSlate();
@@ -399,7 +399,7 @@
         }
       }
 
-      // Function to ensure that the player has the prerequisiute resources to undertake a certain action.
+      // Ensures that the player has the prerequisiute resources to undertake a certain action.
 
       function prereqCheck(prompt) {
         console.log("Prompt passed as argument: " + prompt);
@@ -418,6 +418,8 @@
         }
         return false;
       }
+
+      // Specifically used to display to users that they do not have the requisite resources required.
 
       function drawMe() {
         window.addEventListener("keydown", function contPlz(e) {
@@ -607,6 +609,28 @@
             if (e.keyCode === 51) {
               console.log("Hunting!");
               window.removeEventListener("keydown", decider);
+              if (myCaravan.guns < 1) {
+                blankSlate();
+                failedCheck();
+                window.addEventListener("keydown", function noHunt(e) {
+                  if (e.keyCode === 32) {
+                    window.removeEventListener("keydown", noHunt);
+                    decisionPrompt();
+                  }
+                });
+                return;
+              }
+              if (myCaravan.ammo < 1) {
+                blankSlate();
+                failedCheck();
+                window.addEventListener("keydown", function noHunt(e) {
+                  if (e.keyCode === 32) {
+                    window.removeEventListener("keydown", noHunt);
+                    decisionPrompt();
+                  }
+                });
+                return;
+              }
               blankSlate();
               wrapText(
                 ctx,
@@ -1088,25 +1112,25 @@
 
       prompts = [
         [
-          "Strange tracks cross the trail ahead of you, leading into the deep ochre woods. They look similar to fresh hoofprints, but the dimensions are wrong. If you manage to hunt the creature you could increase your available food considerably, but would have to use a medical kit to ensure that the meat was edible.",
+          "Strange tracks cross the trail ahead of you, leading into the deep ochre woods. They look like fresh hoofprints, but the dimensions are wrong and they don't match anything in the wildlife database. If you manage to hunt the creature you could increase your available food considerably, but would still have to use a medical kit to ensure that the meat was edible.",
           "Press 1 to hunt the creature",
           "Press 2 to ignore the tracks",
           "guns",
           1,
           "ammo",
-          30,
+          25,
           "medicine",
           1,
         ],
         [
-          "You come across vibrant cerulean pods sprouting from the ground. They may be edible, but you would have to use a medical test kit to be sure.",
+          "You come across vibrant cerulean pods sprouting from the ground. They are not present in the horticultural database, so you would have to use a medical kit to test if they are fit for consumption.",
           "Press 1 to test the pods",
           "Press 2 to leave them alone",
           "medicine",
           1,
         ],
         [
-          "On the horizon you see more wreckage from the drop-pod. As you approach the debris you don't immediately see anything that has survived the crash, but you could dig through the wreckage for supplies if you feel it's worth your time.",
+          "Moments after setting off for the day, you spot wreckage from the drop-pod on the horizon. As you approach the debris you don't immediately see anything that has survived the crash, but you could dig through the wreckage for supplies if you feel it's worth your time; it would take the rest of the day, however.",
           "Press 1 to search the wreckage",
           "Press 2 to ignore it and continue",
         ],
@@ -1122,17 +1146,17 @@
           "guns",
           1,
           "ammo",
-          30,
+          10,
         ],
       ];
 
       results = [
         [
-          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Yak, except for the 5 eyes and frills along its spine. It takes 10 shots but the creature drops. Triumphant, you drag it back to the caravan and your medical kit clears it for consumption.",
-          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Bull, except that it's twice as large and has retractable claws. You barely escape by firing 30 bullets as you run, someone sustains an awful wound in the process.",
+          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Yak, except for the 5 eyes and frills along its spine. It takes 15 shots but the creature drops. Triumphant, you drag it back to the caravan and your medical kit clears it for consumption.",
+          "You move quietly, following the prints until your quarry is in sight. The creature looks similar to a Bull, except that it's twice as large and has retractable claws. You barely escape by firing 25 bullets as you run, someone sustains an awful wound in the process.",
           "You decide to ignore the strange tracks, erring on the side of caution. Not only could the creature be dangerous, but it may not even be edible. You gain nothing, but lose nothing.",
-          "Lose 10 ammo, lose 1 medicine, gain 20 food",
-          "Lose 30 ammo, hunter sustained an injury",
+          "Lose 15 ammo, lose 1 medicine, gain 20 food",
+          "Lose 25 ammo, hunter sustained an injury",
           3,
           2,
         ],
@@ -1167,7 +1191,7 @@
           "Shots crash against the brittle rock, plunge into the soil around you. You steel your nerves, take aim and fire at your attacker. As the gunfire ceases, you investigate carefully. Some sort of bipedal reptilian must have found a rifle and some ammunition from the dropship. The gun took one of your shots and is useless, but you collect the remaining ammo.",
           "Shots crash against the brittle rock, plunge into the soil around you. Your nerve fails you as a bullet smashes your rifle to useless splinters, and you flee in a panic.",
           "This is madness, you're no soldier. You sprint into the undergrowth as bullets whizz past you. When you stop running your lungs are burning and your heart is hammering, but you've somehow emerged unscathed.",
-          "Gained 30 ammo",
+          "Gained 20 ammo",
           "Lost a gun",
           1,
           1,
@@ -1177,11 +1201,11 @@
       // Rewards
 
       rewards = [
-        ["ammo", -10, "medicine", -1, "food", 20, "ammo", -30, "wound", 1],
+        ["ammo", -15, "medicine", -1, "food", 20, "ammo", -25, "wound", 1],
         ["food", 10, "medicine", -1, "medicine", -1],
         ["medicine", 2],
-        ["guns", 1, "ammo", 50, "wound", 2],
-        ["ammo", 30, "guns", -1],
+        ["guns", 1, "ammo", 30, "wound", 2],
+        ["ammo", 20, "guns", -1],
       ];
 
       function giveReward(type, amt) {
