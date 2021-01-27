@@ -86,7 +86,7 @@
           myGameArea.canvas.height / 2 + myGameArea.canvas.height / 8,
           8,
           50,
-          1,
+          0,
           2,
           100
         );
@@ -429,8 +429,7 @@
             }
             drawSupplies();
             window.removeEventListener("keydown", contPlz);
-            window.interval = setInterval(updateGame, 5000);
-            return;
+            decisionPrompt();
           }
         });
       }
@@ -570,7 +569,7 @@
           blankSlate();
           wrapText(
             ctx,
-            "Press 1 to set out.",
+            "As the light dies, your party settles down for the night and eat their rations. Press 1 to sleep and set out at first light.",
             "Press 2 to check the status of your party.",
             "Press 3 to hunt. (this will take an entire day)",
             ctx.canvas.width / 3 / 2 + 10,
@@ -620,51 +619,54 @@
                 lineHeight
               );
               prey = Math.floor(Math.random() * 3);
-              preyStat = "";
+              preyTex = "";
+              console.log(prey);
               if (prey === 0) {
-                preyStat =
-                  "You hunt all day, but are able to find nothing edible.";
+                preyTex =
+                  "You hunt all day, spend some ammo but are able to catch or find nothing edible.";
+                ammoSub = myCaravan.ammo -= Math.floor(Math.random() * 11);
               }
               if (prey === 1) {
-                preyStat =
-                  "You hunt all day, catching nothing. You are able to gather some edible flora but it's scarcely enough to measure up against what was eaten while daylight burned.";
+                preyTex =
+                  "You hunt all day, spend some ammo but catch nothing. You are able to gather some edible flora but it's scarcely enough to measure up against what was eaten while daylight burned.";
+                ammoSub = myCaravan.ammo -= Math.floor(Math.random() * 11);
+                foodCatch = myCaravan.food += Math.floor(Math.random() * 7) + 4;
               }
               if (prey === 2) {
-                preyStat =
-                  "You hunt all day and procure some impressive specimens! You won't have to worry about food for the next few days.";
+                preyTex =
+                  "You hunt all day, spend some ammo and procure some impressive specimens! You won't have to worry about food for the next few days.";
+                ammoSub = myCaravan.ammo -= Math.floor(Math.random() * 11) + 7;
+                foodCatch = myCaravan.food +=
+                  Math.floor(Math.random() * 9) + 16;
               }
-              console.log(preyStat);
+              console.log(preyTex);
               window.interval = setInterval(hunt, 3000);
               return;
               function hunt() {
+                console.log("hunt fired");
                 clearInterval(window.interval);
                 blankSlate();
-                console.log(prey);
-                function huntFunc() {
-                  console.log("huntFunc fired");
-                  wrapText(
-                    ctx,
-                    preyStat,
-                    "Press space to continue.",
-                    "",
-                    ctx.canvas.width / 3 / 2 + 10,
-                    ctx.canvas.height / 3 / 2 + 30,
-                    maxWidth,
-                    lineHeight
-                  );
-                  window.addEventListener("keydown", function hunting(e) {
-                    if (e.keyCode === 32) {
-                      console.log(
-                        "clearing preyStat and re-firing decisionPrompt"
-                      );
-                      window.removeEventListener("keydown", hunting);
-                      preyStat = "";
-                      hPromptStatus = 0;
-                      decisionPrompt();
-                    }
-                  });
-                }
-                huntFunc();
+                wrapText(
+                  ctx,
+                  preyTex,
+                  "Press space to continue.",
+                  "",
+                  ctx.canvas.width / 3 / 2 + 10,
+                  ctx.canvas.height / 3 / 2 + 30,
+                  maxWidth,
+                  lineHeight
+                );
+                window.addEventListener("keydown", function hunting(e) {
+                  if (e.keyCode === 32) {
+                    console.log(
+                      "clearing preyStat and re-firing decisionPrompt"
+                    );
+                    window.removeEventListener("keydown", hunting);
+                    // preyTex = "";
+                    hPromptStatus = 0;
+                    decisionPrompt();
+                  }
+                });
               }
             }
           });
@@ -701,6 +703,12 @@
         window.addEventListener("keydown", function pickOne(e) {
           // User chose to interact with event
           if (e.keyCode === 49) {
+            if (chosen === 2) {
+              console.log(
+                "Small addition: if interacting with an event takes all day, this adds a day so that one isn't subtracted. Any future events that require this can be implemented as part of the if statement above."
+              );
+              daysLeft += 1;
+            }
             console.log("Removing initial pickOne event listener");
             window.removeEventListener("keydown", pickOne);
             ctx.fillStyle = "white";
@@ -731,6 +739,7 @@
                 typeCheck(type, amt) === false
               ) {
                 if (prereqCheck(chosen) === true) {
+                  console.log("prereqCheck fired");
                   drawMe();
                   return;
                 } else {
@@ -801,7 +810,6 @@
                       }
                       console.log("Removing moveOn event listener");
                       window.removeEventListener("keydown", moveOn);
-                      // blankSlate();
                       decisionPrompt();
                     }
                   });
