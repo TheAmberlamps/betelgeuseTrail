@@ -561,12 +561,18 @@
         } else {
           console.log("code advancing past hungPrompts & deathPrompts");
           ctx = myGameArea.context;
+          backgroundTerrain();
+          myCaravan.drawIt();
+          for (i = 0; i < members.length; i++) {
+            members[i].drawMe();
+          }
+          drawSupplies();
           blankSlate();
           wrapText(
             ctx,
             "Press 1 to set out.",
             "Press 2 to check the status of your party.",
-            "",
+            "Press 3 to hunt. (this will take an entire day)",
             ctx.canvas.width / 3 / 2 + 10,
             ctx.canvas.height / 3 / 2 + 30,
             maxWidth,
@@ -576,14 +582,7 @@
             if (e.keyCode === 49) {
               console.log("Chose to move on");
               window.removeEventListener("keydown", decider);
-              ctx.fillStyle = "white";
-              ctx.fillRect(
-                ctx.canvas.width / 3 / 2,
-                ctx.canvas.height / 3 / 2,
-                (ctx.canvas.width / 3) * 2,
-                (ctx.canvas.height / 3) * 2
-              );
-              ctx.fillStyle = "black";
+              blankSlate();
               backgroundTerrain();
               myCaravan.drawIt();
               for (i = 0; i < members.length; i++) {
@@ -597,14 +596,7 @@
             if (e.keyCode === 50) {
               console.log("Checking party status");
               window.removeEventListener("keydown", decider);
-              ctx.fillStyle = "white";
-              ctx.fillRect(
-                ctx.canvas.width / 3 / 2,
-                ctx.canvas.height / 3 / 2,
-                (ctx.canvas.width / 3) * 2,
-                (ctx.canvas.height / 3) * 2
-              );
-              ctx.fillStyle = "black";
+              blankSlate();
               wrapText2(
                 ctx,
                 ctx.canvas.width / 3 / 2 + 10,
@@ -613,11 +605,73 @@
                 30
               );
             }
+            if (e.keyCode === 51) {
+              console.log("Hunting!");
+              window.removeEventListener("keydown", decider);
+              blankSlate();
+              wrapText(
+                ctx,
+                "Hunting...",
+                "",
+                "",
+                ctx.canvas.width / 3 / 2 + 10,
+                ctx.canvas.height / 3 / 2 + 30,
+                maxWidth,
+                lineHeight
+              );
+              prey = Math.floor(Math.random() * 3);
+              preyStat = "";
+              if (prey === 0) {
+                preyStat =
+                  "You hunt all day, but are able to find nothing edible.";
+              }
+              if (prey === 1) {
+                preyStat =
+                  "You hunt all day, catching nothing. You are able to gather some edible flora but it's scarcely enough to measure up against what was eaten while daylight burned.";
+              }
+              if (prey === 2) {
+                preyStat =
+                  "You hunt all day and procure some impressive specimens! You won't have to worry about food for the next few days.";
+              }
+              console.log(preyStat);
+              window.interval = setInterval(hunt, 3000);
+              return;
+              function hunt() {
+                clearInterval(window.interval);
+                blankSlate();
+                console.log(prey);
+                function huntFunc() {
+                  console.log("huntFunc fired");
+                  wrapText(
+                    ctx,
+                    preyStat,
+                    "Press space to continue.",
+                    "",
+                    ctx.canvas.width / 3 / 2 + 10,
+                    ctx.canvas.height / 3 / 2 + 30,
+                    maxWidth,
+                    lineHeight
+                  );
+                  window.addEventListener("keydown", function hunting(e) {
+                    if (e.keyCode === 32) {
+                      console.log(
+                        "clearing preyStat and re-firing decisionPrompt"
+                      );
+                      window.removeEventListener("keydown", hunting);
+                      preyStat = "";
+                      hPromptStatus = 0;
+                      decisionPrompt();
+                    }
+                  });
+                }
+                huntFunc();
+              }
+            }
           });
         }
       }
 
-      // Dialog boxes, and the logic needed to populate and interact with them. It's a damned mess, but it works, and that's the important part. Abandon all hope of reason, ye who enter here.
+      // Dialog boxes for events and the logic needed to populate and interact with them. It's a damned mess, but it works, and that's the important part. Abandon all hope of reason, ye who enter here.
 
       function TextPrompt() {
         blankSlate();
